@@ -52,6 +52,8 @@ const Graph = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [operation, setOperation] = useState<string | null>(null);
   const [newNodeLabel, setNewNodeLabel] = useState("");
+  const [draggedNode, setDraggedNode] = useState<string | null>(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const svgRef = useRef<SVGSVGElement>(null);
 
   const resetAnimation = useCallback(() => {
@@ -249,7 +251,7 @@ const Graph = () => {
   }, [isAnimating, edges, resetAnimation]);
 
   const handleNodeClick = (nodeId: string) => {
-    if (isAnimating) return;
+    if (isAnimating || draggedNode) return;
     
     setSelectedNodes(prev => {
       if (prev.includes(nodeId)) {
@@ -262,6 +264,66 @@ const Graph = () => {
     });
   };
 
+  const handleNodeMouseDown = (e: React.MouseEvent, nodeId: string) => {
+    if (isAnimating) return;
+    
+    e.stopPropagation();
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node) return;
+
+    const svgRect = svg.getBoundingClientRect();
+    const svgPoint = svg.createSVGPoint();
+    svgPoint.x = e.clientX;
+    svgPoint.y = e.clientY;
+    const transformed = svgPoint.matrixTransform(svg.getScreenCTM()?.inverse());
+
+    setDraggedNode(nodeId);
+    setDragOffset({
+      x: transformed.x - node.x,
+      y: transformed.y - node.y
+    });
+  };
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!draggedNode || isAnimating) return;
+
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    const svgPoint = svg.createSVGPoint();
+    svgPoint.x = e.clientX;
+    svgPoint.y = e.clientY;
+    const transformed = svgPoint.matrixTransform(svg.getScreenCTM()?.inverse());
+
+    setNodes(prev => prev.map(node => 
+      node.id === draggedNode
+        ? { 
+            ...node, 
+            x: Math.max(30, Math.min(470, transformed.x - dragOffset.x)),
+            y: Math.max(30, Math.min(320, transformed.y - dragOffset.y))
+          }
+        : node
+    ));
+  }, [draggedNode, dragOffset, isAnimating]);
+
+  const handleMouseUp = useCallback(() => {
+    setDraggedNode(null);
+  }, []);
+
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      setDraggedNode(null);
+    };
+
+    window.addEventListener('mouseup', handleGlobalMouseUp);
+    return () => {
+      window.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, []);
+
   const renderGraph = () => {
     return (
       <div className="bg-muted/30 rounded-xl p-4">
@@ -271,6 +333,8 @@ const Graph = () => {
           height="400"
           viewBox="0 0 500 350"
           className="border border-border rounded-lg bg-card"
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
         >
           {/* Render Edges */}
           {edges.map(edge => {
@@ -299,23 +363,27 @@ const Graph = () => {
                 cx={node.x}
                 cy={node.y}
                 r="25"
-                className={`cursor-pointer transition-all duration-300 ${
+                className={`cursor-move transition-all duration-300 ${
                   node.isHighlighted ? 'fill-current text-current stroke-2' :
                   node.isVisited ? 'fill-success stroke-success' :
                   selectedNodes.includes(node.id) ? 'fill-warning stroke-warning' :
+                  draggedNode === node.id ? 'fill-primary stroke-primary' :
                   'fill-graph stroke-graph'
                 } ${
                   node.isHighlighted ? 'stroke-current' :
                   node.isVisited ? 'stroke-success' :
                   selectedNodes.includes(node.id) ? 'stroke-warning' :
+                  draggedNode === node.id ? 'stroke-primary' :
                   'stroke-graph'
                 }`}
                 strokeWidth="3"
                 onClick={() => handleNodeClick(node.id)}
+                onMouseDown={(e) => handleNodeMouseDown(e, node.id)}
                 style={{
                   filter: node.isHighlighted ? 'drop-shadow(0 0 10px currentColor)' : 'none',
                   transform: node.isHighlighted ? 'scale(1.1)' : 'scale(1)',
-                  transformOrigin: `${node.x}px ${node.y}px`
+                  transformOrigin: `${node.x}px ${node.y}px`,
+                  cursor: draggedNode === node.id ? 'grabbing' : 'grab'
                 }}
               />
               <text
@@ -380,7 +448,7 @@ const Graph = () => {
               <CardContent>
                 {renderGraph()}
                 <p className="text-sm text-muted-foreground mt-4 text-center">
-                  Click nodes to select them for edge creation
+                  Drag nodes to reposition • Click to select for edge creation
                 </p>
               </CardContent>
             </Card>
