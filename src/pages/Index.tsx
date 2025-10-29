@@ -43,6 +43,16 @@ const Index = () => {
       operations: ["Add Node", "Add Edge", "BFS", "DFS"],
       difficulty: "Intermediate",
       route: "/graph"
+    },
+    {
+      id: "algorithms",
+      title: "Advanced Algorithms",
+      description: "Explore advanced algorithms like Floyd's Cycle, Circular Queue, Deque, Prim's and Kruskal's",
+      icon: Code2,
+      color: "primary",
+      operations: ["Floyd's", "Circular Queue", "Deque", "Prim's", "Kruskal's"],
+      difficulty: "Advanced",
+      route: "/algorithms"
     }
   ];
 
@@ -92,7 +102,7 @@ const Index = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
           {dataStructures.map((structure) => {
             const IconComponent = structure.icon;
             return (

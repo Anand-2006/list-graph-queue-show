@@ -7,6 +7,12 @@ import Index from "./pages/Index";
 import LinkedList from "./pages/LinkedList";
 import Queue from "./pages/Queue";
 import Graph from "./pages/Graph";
+import Algorithms from "./pages/Algorithms";
+import FloydsCycle from "./pages/FloydsCycle";
+import CircularQueue from "./pages/CircularQueue";
+import Deque from "./pages/Deque";
+import Prims from "./pages/Prims";
+import Kruskals from "./pages/Kruskals";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +28,12 @@ const App = () => (
           <Route path="/linked-list" element={<LinkedList />} />
           <Route path="/queue" element={<Queue />} />
           <Route path="/graph" element={<Graph />} />
+          <Route path="/algorithms" element={<Algorithms />} />
+          <Route path="/algorithms/floyds-cycle" element={<FloydsCycle />} />
+          <Route path="/algorithms/circular-queue" element={<CircularQueue />} />
+          <Route path="/algorithms/deque" element={<Deque />} />
+          <Route path="/algorithms/prims" element={<Prims />} />
+          <Route path="/algorithms/kruskals" element={<Kruskals />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
