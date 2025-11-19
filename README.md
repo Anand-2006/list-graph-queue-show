@@ -2,7 +2,7 @@
 
 ## Project Info
 
-**URL**: https://lovable.dev/projects/85829465-94a7-4abd-a5bd-944eda7c759f
+**URL**: https://rajaneepadwal.github.io/list-graph-queue-show-85759/
 
 ## How to Edit the Code
 
